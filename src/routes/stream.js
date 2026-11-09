@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import { streamText } from 'ai';
 import { checkLimit, addUsage } from "../limits.js";
+import { modelFieldSchema, resolveModel } from "../models.js";
 import { verifyApiKey } from "../users.js";
-
-const model = process.env.MODEL;
 
 export default async function registerStreamRoute(fastify) {
     fastify.post("/stream", {
@@ -25,7 +24,8 @@ export default async function registerStreamRoute(fastify) {
             body: {
                 type: "object",
                 properties: {
-                    prompt: { type: "string" }
+                    prompt: { type: "string" },
+                    model: modelFieldSchema()
                 },
                 required: ["prompt"],
                 additionalProperties: false
@@ -40,6 +40,14 @@ export default async function registerStreamRoute(fastify) {
                             }
                         }
                     }
+                },
+                400: {
+                    type: "object",
+                    properties: {
+                        error: { type: "string" },
+                        models: { type: "array", items: { type: "string" } }
+                    },
+                    required: ["error"]
                 },
                 401: { type: "object", properties: { error: { type: "string" } }, required: ["error"] },
                 403: { type: "object", properties: { error: { type: "string" } }, required: ["error"] },
@@ -70,6 +78,15 @@ export default async function registerStreamRoute(fastify) {
         const user = await verifyApiKey(apiKey);
         if (!user) return reply.status(403).send({ error: "Invalid API key" });
 
+        const { prompt, model: requestedModel } = req.body ?? {};
+        const resolved = resolveModel(requestedModel);
+        if (resolved.error) {
+            return reply.status(400).send({
+                error: resolved.error,
+                models: resolved.models
+            });
+        }
+
         const { allowed, used, limit } = await checkLimit(apiKey);
         if (!allowed) {
             return reply.status(429).send({
@@ -79,9 +96,7 @@ export default async function registerStreamRoute(fastify) {
             });
         }
 
-        const { prompt } = req.body ?? {};
-
-        const result = await streamText({ model, prompt });
+        const result = await streamText({ model: resolved.model, prompt });
 
         await addUsage(apiKey, 1);
 

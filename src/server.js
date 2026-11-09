@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import registerGenerateRoute from "./routes/generate.js";
 import registerStreamRoute from "./routes/stream.js";
+import registerModelsRoute from "./routes/models.js";
 import registerAdminRoutes from "./routes/admin.js";
 import swagger from "@fastify/swagger";
 import swaggerUI from "@fastify/swagger-ui";
@@ -11,7 +12,7 @@ await app.register(swagger, {
     openapi: {
         info: {
             title: "AI Proxy API",
-            description: "API documentation for text generation and streaming endpoints",
+            description: "API documentation for text generation and streaming endpoints. Pass an optional model id from GET /models.",
             version: "1.0.0"
         },
         servers: [
@@ -20,7 +21,8 @@ await app.register(swagger, {
         tags: [
             { name: "root", description: "Root and health endpoints" },
             { name: "text", description: "Text generation endpoints" },
-            { name: "stream", description: "Streaming endpoints" }
+            { name: "stream", description: "Streaming endpoints" },
+            { name: "models", description: "Models available for generation" }
         ]
     }
 });
@@ -33,6 +35,7 @@ await app.register(swaggerUI, {
     }
 });
 
+app.register(registerModelsRoute);
 app.register(registerGenerateRoute);
 app.register(registerStreamRoute);
 app.register(registerAdminRoutes);

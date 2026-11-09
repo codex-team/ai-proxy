@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import { generateText } from 'ai';
 import { checkLimit, addUsage } from "../limits.js";
+import { modelFieldSchema, resolveModel } from "../models.js";
 import { verifyApiKey } from "../users.js";
-
-const model = process.env.MODEL;
 
 export default async function registerGenerateRoute(fastify) {
     fastify.post("/generate", {
@@ -20,7 +19,8 @@ export default async function registerGenerateRoute(fastify) {
             body: {
                 type: "object",
                 properties: {
-                    prompt: { type: "string" }
+                    prompt: { type: "string" },
+                    model: modelFieldSchema()
                 },
                 required: ["prompt"],
                 additionalProperties: false
@@ -32,6 +32,14 @@ export default async function registerGenerateRoute(fastify) {
                         text: { type: "string" }
                     },
                     required: ["text"]
+                },
+                400: {
+                    type: "object",
+                    properties: {
+                        error: { type: "string" },
+                        models: { type: "array", items: { type: "string" } }
+                    },
+                    required: ["error"]
                 },
                 401: { type: "object", properties: { error: { type: "string" } }, required: ["error"] },
                 403: { type: "object", properties: { error: { type: "string" } }, required: ["error"] },
@@ -53,6 +61,15 @@ export default async function registerGenerateRoute(fastify) {
         const user = await verifyApiKey(apiKey);
         if (!user) return reply.status(403).send({ error: "Invalid API key" });
 
+        const { prompt, model: requestedModel } = req.body;
+        const resolved = resolveModel(requestedModel);
+        if (resolved.error) {
+            return reply.status(400).send({
+                error: resolved.error,
+                models: resolved.models
+            });
+        }
+
         const { allowed, used, limit } = await checkLimit(apiKey);
         if (!allowed) {
             return reply.status(429).send({
@@ -62,9 +79,7 @@ export default async function registerGenerateRoute(fastify) {
             });
         }
 
-        const { prompt } = req.body;
-
-        const result = await generateText({ model, prompt });
+        const result = await generateText({ model: resolved.model, prompt });
 
         await addUsage(apiKey, 1);
 
