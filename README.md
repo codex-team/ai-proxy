@@ -49,11 +49,17 @@ API‑ключ выдаётся администратором сервиса.
   {
     "default": "openai/gpt-5-mini",
     "models": [
-      { "id": "openai/gpt-5-mini", "name": "GPT-5 mini" }
+      {
+        "id": "openai/gpt-5-mini",
+        "name": "GPT-5 mini",
+        "pricing": { "input": 0.25, "output": 2, "cacheRead": 0.025 }
+      }
     ]
   }
   ```
   `default` — модель сервера (`MODEL`). Она используется, если в запросе нет `model`.
+
+  `pricing` — стандартная цена в USD за 1 млн токенов: `input`, `output`, `cacheRead`. `cacheWrite` есть только у моделей, где запись в кэш тарифицируется отдельно. Регион, priority, flex и повышенная ставка длинного контекста в эти числа не входят.
 
 Доступные id:
 

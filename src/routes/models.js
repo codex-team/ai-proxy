@@ -24,9 +24,20 @@ export default async function registerModelsRoute(fastify) {
                                 type: "object",
                                 properties: {
                                     id: { type: "string" },
-                                    name: { type: "string" }
+                                    name: { type: "string" },
+                                    pricing: {
+                                        type: "object",
+                                        description: "Standard USD price per 1 million tokens. Omits region, priority, flex, and long-context tiers.",
+                                        properties: {
+                                            input: { type: "number" },
+                                            output: { type: "number" },
+                                            cacheRead: { type: "number" },
+                                            cacheWrite: { type: "number" }
+                                        },
+                                        required: ["input", "output"]
+                                    }
                                 },
-                                required: ["id", "name"]
+                                required: ["id", "name", "pricing"]
                             }
                         }
                     },
