@@ -29,9 +29,20 @@ export default async function registerGenerateRoute(fastify) {
                 200: {
                     type: "object",
                     properties: {
-                        text: { type: "string" }
+                        text: { type: "string" },
+                        usage: {
+                            type: "object",
+                            description: "Token usage reported by the provider. Counts may be omitted when the provider does not report them.",
+                            properties: {
+                                inputTokens: { type: "number" },
+                                outputTokens: { type: "number" },
+                                totalTokens: { type: "number" },
+                                reasoningTokens: { type: "number" },
+                                cachedInputTokens: { type: "number" }
+                            }
+                        }
                     },
-                    required: ["text"]
+                    required: ["text", "usage"]
                 },
                 400: {
                     type: "object",
@@ -85,6 +96,7 @@ export default async function registerGenerateRoute(fastify) {
 
         return reply.send({
             text: result.text,
+            usage: result.totalUsage,
         });
     });
 }

@@ -36,7 +36,7 @@ export default async function registerStreamRoute(fastify) {
                         "application/x-ndjson": {
                             schema: {
                                 type: "string",
-                                description: "NDJSON stream. Each line is a JSON event object."
+                                description: "NDJSON stream. Each line is a JSON event object. The finish event includes usage."
                             }
                         }
                     }
@@ -156,7 +156,7 @@ export default async function registerStreamRoute(fastify) {
                     break;
                 }
                 case 'finish': {
-                    send({ type: "finish" });
+                    send({ type: "finish", usage: part.totalUsage });
                     break;
                 }
                 case 'error': {

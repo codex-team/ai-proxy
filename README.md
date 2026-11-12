@@ -82,9 +82,15 @@ API‑ключ выдаётся администратором сервиса.
 - **Ответ 200**:
   ```json
   {
-    "text": "Сгенерированный текст"
+    "text": "Сгенерированный текст",
+    "usage": {
+      "inputTokens": 12,
+      "outputTokens": 34,
+      "totalTokens": 46
+    }
   }
   ```
+  `usage` — расход токенов по данным провайдера. `reasoningTokens` и `cachedInputTokens` приходят только если провайдер их сообщает. Отдельные счётчики могут отсутствовать.
 - **Ошибки**: `400`, `401`, `403`, `429`
 
 Пример:
@@ -126,7 +132,7 @@ curl -X POST "http://llm.codex.so/generate" \
 - `reasoning-start` — начало рассуждений (если поддерживается моделью)
 - `reasoning-delta` — порция рассуждений: `{ "type": "reasoning-delta", "delta": "<reasoning>" }`
 - `reasoning-end` — завершение рассуждений
-- `finish` — завершение обработки
+- `finish` — завершение обработки. Содержит `usage` с тем же набором полей, что и `POST /generate`
 
 Пример запроса (curl):
 
@@ -146,5 +152,5 @@ curl -N -X POST "http://llm.codex.so/stream" \
 {"type":"text-delta","delta":"Привет! "}
 {"type":"text-delta","delta":"NDJSON — это формат, в котором "}
 {"type":"text-end"}
-{"type":"finish"}
+{"type":"finish","usage":{"inputTokens":12,"outputTokens":34,"totalTokens":46}}
 ```
