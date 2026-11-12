@@ -3,6 +3,8 @@ import registerGenerateRoute from "./routes/generate.js";
 import registerStreamRoute from "./routes/stream.js";
 import registerModelsRoute from "./routes/models.js";
 import registerAdminRoutes from "./routes/admin.js";
+import registerHomeRoute from "./routes/home.js";
+import registerHealthRoute from "./routes/health.js";
 import swagger from "@fastify/swagger";
 import swaggerUI from "@fastify/swagger-ui";
 
@@ -39,19 +41,8 @@ app.register(registerModelsRoute);
 app.register(registerGenerateRoute);
 app.register(registerStreamRoute);
 app.register(registerAdminRoutes);
-
-
-app.get("/", {
-    schema: {
-        tags: ["root"],
-        summary: "Health check",
-        response: {
-            200: { type: "string" }
-        }
-    }
-}, (req, reply) => {
-    return reply.send("Hello World");
-});
+app.register(registerHomeRoute);
+app.register(registerHealthRoute);
 
 app.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
     if (err) throw err;
